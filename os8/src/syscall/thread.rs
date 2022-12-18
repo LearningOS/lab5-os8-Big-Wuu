@@ -4,6 +4,7 @@ use crate::{
     trap::{trap_handler, TrapContext},
 };
 use alloc::sync::Arc;
+use alloc::vec;
 
 pub fn sys_thread_create(entry: usize, arg: usize) -> isize {
     let task = current_task().unwrap();
@@ -40,6 +41,13 @@ pub fn sys_thread_create(entry: usize, arg: usize) -> isize {
     tasks[new_task_tid] = Some(Arc::clone(&new_task));
     // add new task to scheduler
     add_task(Arc::clone(&new_task));
+    // deadlock utils
+    let m = process_inner.mutex_list.len();
+    process_inner.mutex_need.push(vec![0; m]);
+    process_inner.mutex_allocation.push(vec![0; m]);
+    let m = process_inner.semaphore_list.len();
+    process_inner.semaphore_need.push(vec![0; m]);
+    process_inner.semaphore_allocation.push(vec![0; m]);
     new_task_tid as isize
 }
 
